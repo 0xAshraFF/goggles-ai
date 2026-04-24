@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agentshield"
+name = "goggles-ai"
 version = "0.1.0"
-description = "GogglesAI — open-source perception-layer security suite for AI agents"
+description = "goggles-ai — open-source inspection layer for AI agent inputs"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -36,16 +36,16 @@ test = [
     "responses>=0.25.0",
 ]
 dev = [
-    "agentshield[test]",
+    "goggles-ai[test]",
     "black>=24.3.0",
     "ruff>=0.4.0",
 ]
 all = [
-    "agentshield[deep,test,dev]",
+    "goggles-ai[deep,test,dev]",
 ]
 
 [project.scripts]
-agentshield = "agentshield.cli:main"
+goggles-ai = "agentshield.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

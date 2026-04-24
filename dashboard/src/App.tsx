@@ -8,9 +8,9 @@ import { AboutView } from './views/AboutView'
 type Tab = 'scan' | 'history' | 'stats' | 'about'
 
 const TABS: { id: Tab; label: string; Icon: typeof Shield }[] = [
-  { id: 'scan',    label: 'Scan',    Icon: Shield },
+  { id: 'scan',    label: 'Inspect', Icon: Shield },
   { id: 'history', label: 'History', Icon: History },
-  { id: 'stats',   label: 'Stats',   Icon: BarChart2 },
+  { id: 'stats',   label: 'Metrics', Icon: BarChart2 },
   { id: 'about',   label: 'About',   Icon: BookOpen },
 ]
 
@@ -24,7 +24,10 @@ export default function App() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center gap-6 h-14">
           <div className="flex items-center gap-2 shrink-0">
             <Shield size={20} className="text-indigo-400" />
-            <span className="font-bold text-gray-100 text-sm tracking-tight">GogglesAI</span>
+            <span className="font-bold text-gray-100 text-sm tracking-tight">goggles-ai</span>
+          </div>
+          <div className="hidden text-xs uppercase tracking-[0.2em] text-gray-500 md:block">
+            Secure the content your agent reads
           </div>
           <nav className="flex gap-1 overflow-x-auto">
             {TABS.map(({ id, label, Icon }) => (

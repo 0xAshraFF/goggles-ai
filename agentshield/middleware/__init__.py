@@ -1,1 +1,1 @@
-"""GogglesAI middleware integrations (Task 3)."""
+"""goggles-ai middleware integrations (Task 3)."""

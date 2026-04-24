@@ -15,11 +15,12 @@ export function AboutView() {
       <div>
         <div className="flex items-center gap-3 mb-3">
           <Shield size={32} className="text-indigo-400" />
-          <h1 className="text-2xl font-bold text-gray-100">GogglesAI</h1>
+          <h1 className="text-2xl font-bold text-gray-100">goggles-ai</h1>
         </div>
         <p className="text-gray-400 leading-relaxed">
-          Open-source perception-layer security suite for AI agents. Detects prompt injection, steganography,
-          cloaking, and other attacks that exploit the gap between what humans see and what AI agents process.
+          Open-source inspection layer for AI agent inputs. goggles-ai scans pages, text, and images before
+          they reach an agent, exposing hidden instructions and suspicious payloads that would otherwise slip
+          into the model context.
         </p>
         <div className="flex gap-3 mt-4">
           <a
@@ -39,12 +40,12 @@ export function AboutView() {
 
       {/* Architecture */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-200 mb-4">Three-Tier Detection</h2>
+        <h2 className="text-lg font-semibold text-gray-200 mb-4">How The Demo Works</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { tier: 'T1', label: 'Rule-Based', latency: '<50ms', colour: 'indigo' },
-            { tier: 'T2', label: 'Statistical', latency: '<500ms', colour: 'purple' },
-            { tier: 'T3', label: 'Deep Learning', latency: '<5s', colour: 'pink' },
+            { tier: '1', label: 'Inspect', latency: 'Source in', colour: 'indigo' },
+            { tier: '2', label: 'Reveal', latency: 'Hidden risks', colour: 'purple' },
+            { tier: '3', label: 'Respond', latency: 'Clean output', colour: 'pink' },
           ].map(t => (
             <div key={t.tier} className="rounded-lg border border-gray-700 bg-gray-800/50 p-4">
               <div className="flex items-baseline gap-2">

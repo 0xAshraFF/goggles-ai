@@ -1,4 +1,4 @@
-"""GogglesAI — perception-layer security suite for AI agents."""
+"""goggles-ai — inspection layer for AI agent inputs."""
 
 from agentshield.models import ScanResult, Threat, ThreatType
 from agentshield.scanner import scan, scan_file, scan_url

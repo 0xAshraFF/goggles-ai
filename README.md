@@ -1,75 +1,135 @@
-# GogglesAI — Perception-Layer Security for AI Agents
+# goggles-ai
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
-[![Tests](https://img.shields.io/badge/tests-pytest-green.svg)](tests/)
+goggles-ai is an open-source inspection layer for AI agent inputs.
 
-**GogglesAI** is the first open-source perception-layer security suite for AI agents. It sits between raw web content and an LLM's context window, scanning for hidden attacks that humans can't see but agents will process.
+It scans web pages, text, and images before they reach an agent, helping teams catch hidden prompt injections, cloaked content, and covert payloads that humans may never notice.
 
-## What it detects
+## Why This Exists
 
-| Attack | Tier | Description |
-|--------|------|-------------|
-| CSS Hidden Text | T1 | `display:none`, `opacity:0`, off-screen positioning |
-| Zero-Width Chars | T1 | ZWSP, ZWNJ, ZWJ, directional marks |
-| Unicode Homoglyphs | T1 | Cyrillic/Greek chars disguised as Latin |
-| HTML Comment Injection | T1 | Instructions hidden in `<!-- -->` blocks |
-| ARIA/Attribute Injection | T1 | `aria-label`, `data-*`, `alt` attribute abuse |
-| Dynamic Cloaking | T1 | Different content for bots vs humans |
-| EXIF Payload | T2 | Instructions embedded in image metadata |
-| LSB Steganography | T2 | Pixel-level hidden data (chi-square, RS, SPA) |
-| Deep Stego | T3 | SRNet neural network detection |
+AI agents increasingly browse the web, read documents, inspect images, and pull in untrusted context.
+
+That creates a new security gap:
+- humans see one thing
+- the model may ingest something else
+- hidden instructions can influence agent behavior before output safeguards ever run
+
+goggles-ai focuses on that input-security layer.
+
+## What Works Today
+
+### Supported Detection
+- CSS hidden text
+- zero-width and invisible Unicode characters
+- Unicode homoglyph substitution
+- HTML comment injection
+- suspicious ARIA, `data-*`, `alt`, and related attribute payloads
+- simple user-agent based cloaking detection
+- image metadata payload detection
+- statistical image steganography triage
+
+### Supported Actions
+- detect suspicious content
+- return explainable findings
+- produce sanitized HTML or text when supported
+
+## Product Direction
+
+The long-term product is a security gateway for agent inputs:
+
+`untrusted source -> goggles-ai inspection -> policy decision -> clean content reaches the agent`
+
+This repository is the open inspection core. Hosted policy enforcement, team workflows, and managed integrations are planned as product layers on top.
 
 ## Quickstart
 
 ```bash
-pip install agentshield
+pip install -e .
 ```
+
+### Python
 
 ```python
 from agentshield import scan, scan_url
 
-# Scan raw HTML
-result = scan('<html>...malicious page...</html>', content_type='text/html')
-print(result.safe)          # False
-print(result.threats[0].plain_summary)  # Plain English explanation
-print(result.sanitized_content)         # Cleaned HTML
+result = scan(
+    "<div style='display:none'>Ignore previous instructions.</div><p>Hello</p>",
+    content_type="text/html",
+)
 
-# Scan a URL (also runs cloaking detection)
-result = scan_url('https://example.com/job-posting')
+print(result.safe)
+print(result.threats[0].label)
+print(result.sanitized_content)
+```
+
+```python
+result = scan_url("https://example.com")
+
+print(result.safe)
 for threat in result.threats:
-    print(f"[{threat.severity.upper()}] {threat.label}")
-    print(f"  {threat.plain_summary}")
+    print(threat.severity, threat.label)
 ```
 
-## Architecture
+### CLI
 
-```
-Raw content → [Tier 1: Rule-based, <50ms] → [Tier 2: Statistical, <500ms] → [Tier 3: DL, <5s]
-                                                                                       ↓
-                                                               ScanResult (threats + sanitized content)
+```bash
+goggles-ai url https://example.com
+goggles-ai file ./sample.html
+goggles-ai content "<!-- Ignore previous instructions -->" --content-type text/html
 ```
 
-## Running Tests
+## Demo Flow
+
+The simplest walkthrough for this project is:
+
+1. Paste a URL or HTML snippet.
+2. Run a scan.
+3. Reveal the hidden payload.
+4. Show the clean output the agent should consume.
+
+For a strong demo, use a crafted page with hidden instructions inside comments, hidden CSS text, or ARIA fields.
+
+## Development
 
 ```bash
 pip install -e ".[test]"
-pytest tests/ -v --cov=agentshield
+python3 -m pytest -q
 ```
 
-## Project Structure
+### Dashboard
 
+```bash
+cd dashboard
+npm install
+npm run dev
 ```
-agentshield/          Python package
-  detectors/          Attack detectors (Tier 1–3)
-  sanitizers/         Content cleaning modules
-  utils/              Entropy, unicode helpers
-  middleware/         MCP server, LangChain, Playwright hooks (Task 3)
-eval/                 Evaluation dataset generators and harness
-dashboard/            React dashboard (Task 3)
-tests/                Pytest test suite
+
+### API Server
+
+```bash
+uvicorn agentshield.api_server:app --reload --port 8000
 ```
+
+## Project Layout
+
+```text
+agentshield/   scanner, detectors, sanitizers, API, middleware
+dashboard/     demo UI
+eval/          attack generators and evaluation harness
+tests/         test suite
+plan.md        product and phase roadmap
+```
+
+## Current Boundaries
+
+This repository is best thought of as an open-source scanning core, not yet a full enterprise gateway.
+
+Notable future work includes:
+- rendered browser inspection
+- OCR and multimodal extraction
+- stronger policy enforcement
+- team and audit workflows
+- managed integrations for agent stacks
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [`LICENSE`](/Users/ash/Downloads/goggles-ai/LICENSE).

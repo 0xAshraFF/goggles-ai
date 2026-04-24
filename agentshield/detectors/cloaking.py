@@ -29,7 +29,7 @@ _BROWSER_UA = (
 )
 
 _BOT_UA = (
-    "Mozilla/5.0 (compatible; python-httpx/0.27; +https://github.com/gogglesai)"
+    "Mozilla/5.0 (compatible; python-httpx/0.27; +https://github.com/0xAshraFF/goggles-ai)"
 )
 
 _HEADLESS_UA = (

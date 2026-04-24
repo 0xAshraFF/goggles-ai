@@ -1,4 +1,4 @@
-"""MCP (Model Context Protocol) server for GogglesAI.
+"""MCP (Model Context Protocol) server for goggles-ai.
 
 Exposes three tools that any MCP-compatible agent can call:
   - scan_url     : fetch + scan a URL (runs all tiers including cloaking)
@@ -213,7 +213,7 @@ async def _handle_message(msg: dict) -> dict | None:
         return _reply({
             "protocolVersion": "2024-11-05",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "agentshield", "version": "0.1.0"},
+            "serverInfo": {"name": "goggles-ai", "version": "0.1.0"},
         })
 
     elif method == "tools/list":
@@ -274,7 +274,7 @@ def _make_http_app(port: int):
     from fastapi.responses import JSONResponse, StreamingResponse
     import uvicorn
 
-    app = FastAPI(title="AgentShield MCP Server")
+    app = FastAPI(title="goggles-ai MCP Server")
 
     @app.post("/mcp")
     async def mcp_endpoint(request: Request):
@@ -286,7 +286,7 @@ def _make_http_app(port: int):
 
     @app.get("/health")
     async def health():
-        return {"status": "ok", "server": "agentshield-mcp", "version": "0.1.0"}
+        return {"status": "ok", "server": "goggles-ai-mcp", "version": "0.1.0"}
 
     return app, port
 
@@ -295,7 +295,7 @@ def _make_http_app(port: int):
 
 def main(argv=None) -> None:
     import argparse
-    parser = argparse.ArgumentParser(description="AgentShield MCP Server")
+    parser = argparse.ArgumentParser(description="goggles-ai MCP Server")
     parser.add_argument("--port", type=int, default=None, help="HTTP port (default: stdio transport)")
     parser.add_argument("--host", default="127.0.0.1")
     args = parser.parse_args(argv)
@@ -303,10 +303,10 @@ def main(argv=None) -> None:
     if args.port:
         import uvicorn
         app, port = _make_http_app(args.port)
-        print(f"AgentShield MCP server → http://{args.host}:{port}/mcp", file=sys.stderr)
+        print(f"goggles-ai MCP server -> http://{args.host}:{port}/mcp", file=sys.stderr)
         uvicorn.run(app, host=args.host, port=port)
     else:
-        print("AgentShield MCP server (stdio transport) ready", file=sys.stderr)
+        print("goggles-ai MCP server (stdio transport) ready", file=sys.stderr)
         asyncio.run(_run_stdio())
 
 

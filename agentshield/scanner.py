@@ -5,18 +5,15 @@ Provides three entry points:
   scan_url()  — fetch a URL and scan (also runs cloaking detection)
   scan_file() — scan a local file
 
-Tier escalation: T1 always runs. T2 runs if T1 flags image content. T3 runs
-if T2 flags an image as suspicious.
+Tier escalation: T1 always runs. T2 runs for image content. T3 runs if T2
+flags an image as suspicious.
 """
 
 from __future__ import annotations
 
-import io
 import logging
 import mimetypes
-import os
 import time
-import uuid
 from pathlib import Path
 from typing import Optional, Union
 
@@ -66,6 +63,7 @@ def scan(
     all_threats: list[Threat] = []
     tier_timings: dict[str, int] = {}
     sanitized: Optional[str] = None
+    text_content: Optional[str] = content if isinstance(content, str) else None
 
     ct = content_type.lower().split(";")[0].strip()
 
@@ -73,7 +71,8 @@ def scan(
     t1_start = time.monotonic()
 
     if ct in _HTML_TYPES or (isinstance(content, str) and _looks_like_html(content)):
-        html = content if isinstance(content, str) else content.decode("utf-8", errors="replace")
+        html = text_content if text_content is not None else content.decode("utf-8", errors="replace")
+        text_content = html
         ct = "text/html"
 
         css_result = css_hidden_text.detect(html)
@@ -94,7 +93,8 @@ def scan(
         all_threats.extend(uni_result.threats)
 
     elif ct in _TEXT_TYPES or isinstance(content, str):
-        text = content if isinstance(content, str) else content.decode("utf-8", errors="replace")
+        text = text_content if text_content is not None else content.decode("utf-8", errors="replace")
+        text_content = text
         ct = ct if ct in _TEXT_TYPES else "text/plain"
 
         uni_result = unicode_stego.detect(text)
@@ -145,10 +145,10 @@ def scan(
         tier_timings["t3"] = _ms(t3_start)
 
     # ── Sanitize ───────────────────────────────────────────────────────────
-    if ct in _HTML_TYPES and isinstance(content, str):
-        sanitized = html_sanitizer.sanitize(content)
-    elif ct in _TEXT_TYPES and isinstance(content, str):
-        sanitized = text_sanitizer.sanitize(content)
+    if ct in _HTML_TYPES and text_content is not None:
+        sanitized = html_sanitizer.sanitize(text_content)
+    elif ct in _TEXT_TYPES and text_content is not None:
+        sanitized = text_sanitizer.sanitize(text_content)
 
     # ── Build result ───────────────────────────────────────────────────────
     total_ms = _ms(start)
@@ -199,11 +199,18 @@ def scan_url(
         content_type = resp.headers.get("Content-Type", "text/html").split(";")[0].strip()
     except requests.RequestException as exc:
         logger.warning("scan_url fetch failed for %s: %s", url, exc)
+        fetch_failure = Threat.from_type(
+            ThreatType.FETCH_FAILURE,
+            detail=f"Failed to fetch {url!r}: {exc}",
+            technique="Network or HTTP fetch failure",
+            outcome="blocked",
+            location=url,
+        )
         return ScanResult(
-            safe=True,
-            confidence=0.5,
+            safe=False,
+            confidence=0.98,
             scan_time_ms=_ms(start),
-            threats=[],
+            threats=[fetch_failure],
             sanitized_content=None,
             tier_timings={},
         )

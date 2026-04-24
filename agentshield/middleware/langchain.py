@@ -1,4 +1,4 @@
-"""LangChain tool wrappers for GogglesAI.
+"""LangChain tool wrappers for goggles-ai.
 
 Provides three BaseTool subclasses that plug into any LangChain agent:
 
@@ -185,7 +185,7 @@ else:
 
 
 def get_tools(deep: bool = False):
-    """Return all three AgentShield LangChain tools as a list."""
+    """Return all three goggles-ai LangChain tools as a list."""
     if not _LANGCHAIN_AVAILABLE:
         raise ImportError("langchain-core is required: pip install langchain langchain-core")
     return [ScanUrlTool(), ScanContentTool(), ScanFileTool()]

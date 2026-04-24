@@ -1,4 +1,4 @@
-"""Playwright page.route() interceptor for GogglesAI.
+"""Playwright page.route() interceptor for goggles-ai.
 
 Intercepts all HTTP responses in a Playwright browser session, scans content
 for threats, and either blocks, sanitizes, or passes through based on scan results.
@@ -80,9 +80,9 @@ class HookConfig:
 
 _BLOCKED_HTML = """<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Blocked by AgentShield</title></head>
+<head><meta charset="UTF-8"><title>Blocked by goggles-ai</title></head>
 <body style="font-family:sans-serif;max-width:600px;margin:60px auto;padding:24px">
-<h1 style="color:#dc2626">⚠ Blocked by AgentShield</h1>
+<h1 style="color:#dc2626">Blocked by goggles-ai</h1>
 <p>This page was blocked because it contains threats that could compromise AI agent safety.</p>
 <p id="detail"></p>
 </body>
@@ -267,7 +267,7 @@ def install_sync(
     on_threat: Optional[Callable[[ThreatEvent], None]] = None,
     url_pattern: str = "**/*",
 ) -> SyncPlaywrightHook:
-    """Install the AgentShield intercept hook on a Playwright sync Page.
+    """Install the goggles-ai intercept hook on a Playwright sync Page.
 
     Args:
         page: Playwright sync Page object.
@@ -290,7 +290,7 @@ async def install_async(
     on_threat: Optional[Callable[[ThreatEvent], None]] = None,
     url_pattern: str = "**/*",
 ) -> AsyncPlaywrightHook:
-    """Install the AgentShield intercept hook on a Playwright async Page.
+    """Install the goggles-ai intercept hook on a Playwright async Page.
 
     Args:
         page: Playwright async Page object.

@@ -1,4 +1,4 @@
-"""Pydantic models for GogglesAI scan results and threat representations."""
+"""Pydantic models for goggles-ai scan results and threat representations."""
 
 from enum import Enum
 from typing import Literal, Optional
@@ -21,6 +21,7 @@ class ThreatType(str, Enum):
     HIGH_ENTROPY_PIXELS = "high_entropy_pixels"
     DYNAMIC_CLOAKING = "dynamic_cloaking"
     MAGIC_BYTE_MISMATCH = "magic_byte_mismatch"
+    FETCH_FAILURE = "fetch_failure"
 
 
 # Human-readable labels for each threat type
@@ -39,6 +40,7 @@ THREAT_LABELS: dict[ThreatType, str] = {
     ThreatType.HIGH_ENTROPY_PIXELS: "Anomalous Pixel Entropy",
     ThreatType.DYNAMIC_CLOAKING: "Dynamic Content Cloaking",
     ThreatType.MAGIC_BYTE_MISMATCH: "File Type Magic Byte Mismatch",
+    ThreatType.FETCH_FAILURE: "Source Fetch Failure",
 }
 
 
@@ -114,6 +116,10 @@ THREAT_PLAIN_SUMMARIES: dict[ThreatType, str] = {
         "that presents itself as an image. This could be used to trick your AI into processing "
         "malicious content it would otherwise reject."
     ),
+    ThreatType.FETCH_FAILURE: (
+        "The scanner could not retrieve this source, so it cannot safely say whether the content "
+        "is clean. Treat this result as an inspection failure, not a clean bill of health."
+    ),
 }
 
 THREAT_TIERS: dict[ThreatType, Literal[1, 2, 3]] = {
@@ -131,6 +137,7 @@ THREAT_TIERS: dict[ThreatType, Literal[1, 2, 3]] = {
     ThreatType.HIGH_ENTROPY_PIXELS: 2,
     ThreatType.DYNAMIC_CLOAKING: 1,
     ThreatType.MAGIC_BYTE_MISMATCH: 2,
+    ThreatType.FETCH_FAILURE: 1,
 }
 
 THREAT_SEVERITIES: dict[ThreatType, Literal["critical", "high", "medium", "low"]] = {
@@ -148,6 +155,7 @@ THREAT_SEVERITIES: dict[ThreatType, Literal["critical", "high", "medium", "low"]
     ThreatType.HIGH_ENTROPY_PIXELS: "medium",
     ThreatType.DYNAMIC_CLOAKING: "critical",
     ThreatType.MAGIC_BYTE_MISMATCH: "high",
+    ThreatType.FETCH_FAILURE: "high",
 }
 
 
@@ -161,7 +169,7 @@ class Threat(BaseModel):
     detail: str = Field(description="Technical detail for security researchers")
     plain_summary: str = Field(description="Non-technical plain English impact description")
     technique: str = Field(description="Specific technique used by the attacker")
-    outcome: str = Field(description="What AgentShield did about it")
+    outcome: str = Field(description="What goggles-ai did about it")
     location: Optional[str] = Field(None, description="Where in the content (selector, offset)")
 
     @classmethod

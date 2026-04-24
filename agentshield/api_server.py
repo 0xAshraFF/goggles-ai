@@ -1,4 +1,4 @@
-"""GogglesAI FastAPI server.
+"""goggles-ai FastAPI server.
 
 Endpoints:
   POST /scan/url        — scan a URL (JSON body: {"url": "...", "deep": false})
@@ -78,8 +78,8 @@ def _record(source: str, hint: str, result: ScanResult) -> _HistoryEntry:
 # ── FastAPI app ───────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="GogglesAI API",
-    description="Perception-layer security suite for AI agents",
+    title="goggles-ai API",
+    description="Inspection layer for AI agent inputs",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -388,14 +388,11 @@ async def ws_scan(websocket: WebSocket):
 
                 # Record + emit final result
                 entry = _record(msg_type.replace("scan_", ""), hint, result)
+                response = _to_scan_response(entry)
                 await _send({
                     "event": "complete",
                     "id": entry.id,
-                    "safe": result.safe,
-                    "confidence": result.confidence,
-                    "threat_count": len(result.threats),
-                    "max_severity": result.max_severity,
-                    "scan_time_ms": result.scan_time_ms,
+                    "result": response.model_dump(),
                 })
 
             except Exception as exc:

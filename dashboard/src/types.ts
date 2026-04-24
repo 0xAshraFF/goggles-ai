@@ -56,5 +56,5 @@ export type WsEvent =
   | { event: 'progress'; message: string }
   | { event: 'tier'; tier: string; time_ms: number }
   | { event: 'threat'; threat: Threat }
-  | { event: 'complete'; id: string; safe: boolean; confidence: number; threat_count: number; max_severity: string | null; scan_time_ms: number }
+  | { event: 'complete'; id: string; result: ScanResponse }
   | { event: 'error'; message: string }

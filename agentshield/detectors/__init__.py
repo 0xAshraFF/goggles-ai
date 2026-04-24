@@ -1,4 +1,4 @@
-"""GogglesAI threat detectors — Tiers 1, 2, and 3."""
+"""goggles-ai threat detectors — Tiers 1, 2, and 3."""
 
 from . import (
     cloaking,
