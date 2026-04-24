@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unicodedata
 
-from agentshield.detectors.unicode_stego import ZW_SET
-from agentshield.utils.unicode_confusables import normalize_text
+from goggles_ai.detectors.unicode_stego import ZW_SET
+from goggles_ai.utils.unicode_confusables import normalize_text
 
 
 def sanitize(text: str, normalize_homoglyphs: bool = True) -> str:

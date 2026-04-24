@@ -104,7 +104,7 @@ class SampleResult:
 # ── CSS eval ──────────────────────────────────────────────────────────────────
 
 def _run_css_eval(data_dir: Path) -> tuple[MetricSet, list[SampleResult]]:
-    from agentshield.detectors.css_hidden_text import detect
+    from goggles_ai.detectors.css_hidden_text import detect
 
     css_dir = data_dir / "css"
     if not css_dir.exists():
@@ -156,7 +156,7 @@ def _run_css_eval(data_dir: Path) -> tuple[MetricSet, list[SampleResult]]:
 # ── Unicode eval ──────────────────────────────────────────────────────────────
 
 def _run_unicode_eval(data_dir: Path) -> tuple[MetricSet, list[SampleResult]]:
-    from agentshield.detectors.unicode_stego import detect
+    from goggles_ai.detectors.unicode_stego import detect
 
     uni_dir = data_dir / "unicode"
     if not uni_dir.exists():
@@ -208,7 +208,7 @@ def _run_unicode_eval(data_dir: Path) -> tuple[MetricSet, list[SampleResult]]:
 # ── Image eval ────────────────────────────────────────────────────────────────
 
 def _run_image_eval(data_dir: Path) -> tuple[MetricSet, list[SampleResult]]:
-    from agentshield.detectors.image_triage import detect
+    from goggles_ai.detectors.image_triage import detect
 
     img_dir = data_dir / "images"
     if not img_dir.exists():
@@ -260,7 +260,7 @@ def _run_image_eval(data_dir: Path) -> tuple[MetricSet, list[SampleResult]]:
 # ── Cloaking eval ─────────────────────────────────────────────────────────────
 
 def _run_cloaking_eval(port: int = 15780) -> tuple[MetricSet, list[SampleResult]]:
-    from agentshield.detectors.cloaking import detect
+    from goggles_ai.detectors.cloaking import detect
     from eval.generators.gen_cloaking_server import CLOAKING_EVAL_CASES, start_background_server
 
     thread = start_background_server(port=port)
@@ -391,7 +391,7 @@ def run_all(
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="GogglesAI eval harness")
+    parser = argparse.ArgumentParser(description="goggles-ai eval harness")
     parser.add_argument(
         "--suite",
         nargs="+",

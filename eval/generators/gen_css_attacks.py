@@ -90,7 +90,7 @@ _PAGE_CONTEXTS = [
     ("Recipe Site", "<h1>Chocolate Cake</h1><p>Mix flour, eggs, and cocoa powder.</p>"),
     ("Product Page", "<h1>Laptop Pro X</h1><p>16-inch display, 32GB RAM, 1TB SSD.</p>"),
     ("Support Page", "<h1>Contact Us</h1><p>Email support@example.com for help.</p>"),
-    ("Landing Page", "<h1>GogglesAI</h1><p>Perception-layer security for AI agents.</p>"),
+    ("Landing Page", "<h1>goggles-ai</h1><p>Perception-layer security for AI agents.</p>"),
 ]
 
 
@@ -171,9 +171,9 @@ _CLEAN_PAGES = [
 <ul><li>Cloud infrastructure</li><li>Data analytics</li><li>Security tools</li></ul>"""),
 
     ("Product Docs", """<h1>Installation Guide</h1>
-<pre>pip install agentshield</pre>
+<pre>pip install goggles_ai</pre>
 <p>Then import and use the scanner:</p>
-<pre>from agentshield import scan</pre>"""),
+<pre>from goggles_ai import scan</pre>"""),
 
     ("FAQ Page", """<h1>Frequently Asked Questions</h1>
 <h2>What is your return policy?</h2>

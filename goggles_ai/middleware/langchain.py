@@ -2,7 +2,7 @@
 
 Provides three BaseTool subclasses that plug into any LangChain agent:
 
-    from agentshield.middleware.langchain import ScanUrlTool, ScanContentTool, ScanFileTool
+    from goggles_ai.middleware.langchain import ScanUrlTool, ScanContentTool, ScanFileTool
     from langchain.agents import initialize_agent, AgentType
     from langchain_openai import ChatOpenAI
 
@@ -31,8 +31,8 @@ try:
 except ImportError:
     pass
 
-from agentshield.scanner import scan, scan_url as _scan_url, scan_file as _scan_file
-from agentshield.models import ScanResult
+from goggles_ai.scanner import scan, scan_url as _scan_url, scan_file as _scan_file
+from goggles_ai.models import ScanResult
 
 
 def _format_result(result: ScanResult, include_json: bool = False) -> str:

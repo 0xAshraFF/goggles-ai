@@ -92,7 +92,7 @@ def _metrics_table_latex(report: dict) -> str:
             str(ag["n_samples"]),
         ])
     return _booktabs_table(
-        "GogglesAI Detection Metrics by Suite",
+        "goggles-ai Detection Metrics by Suite",
         "tab:metrics",
         headers,
         rows,
@@ -148,7 +148,7 @@ def _confusion_table_latex(report: dict) -> str:
             _pct(fnr),
         ])
     return _booktabs_table(
-        "GogglesAI Confusion Matrix by Suite",
+        "goggles-ai Confusion Matrix by Suite",
         "tab:confusion",
         headers,
         rows,
@@ -186,7 +186,7 @@ def _latency_table_latex(bench: dict) -> str:
             check,
         ])
     return _booktabs_table(
-        "GogglesAI Detector Latency (n=100)",
+        "goggles-ai Detector Latency (n=100)",
         "tab:latency",
         headers,
         rows,

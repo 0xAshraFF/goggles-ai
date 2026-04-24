@@ -33,7 +33,7 @@ _BOT_UAS = frozenset([
     "curl/",
     "wget/",
     "Go-http-client",
-    "agentshield",
+    "goggles_ai",
     "bot",
     "spider",
     "crawler",

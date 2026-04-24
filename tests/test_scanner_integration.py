@@ -6,8 +6,8 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from agentshield.scanner import scan, scan_file
-from agentshield.models import ScanResult
+from goggles_ai.scanner import scan, scan_file
+from goggles_ai.models import ScanResult
 
 
 # ── Crafted malicious pages ───────────────────────────────────────────────────

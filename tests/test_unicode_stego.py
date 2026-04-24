@@ -1,7 +1,7 @@
 """Tests for unicode steganography detector."""
 
 import pytest
-from agentshield.detectors.unicode_stego import detect, decode_zw_message, ZW_SET
+from goggles_ai.detectors.unicode_stego import detect, decode_zw_message, ZW_SET
 
 
 # ── Helpers to build attack samples ──────────────────────────────────────────

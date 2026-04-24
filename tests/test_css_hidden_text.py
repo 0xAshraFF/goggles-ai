@@ -1,7 +1,7 @@
 """Tests for CSS hidden text detector."""
 
 import pytest
-from agentshield.detectors.css_hidden_text import detect
+from goggles_ai.detectors.css_hidden_text import detect
 
 # ── Attack samples ────────────────────────────────────────────────────────────
 

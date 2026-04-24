@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 
 import requests
 
-from agentshield.detectors.cloaking import (
+from goggles_ai.detectors.cloaking import (
     detect,
     _compare_content,
     _extract_text_blocks,

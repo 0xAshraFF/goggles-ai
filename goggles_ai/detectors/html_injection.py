@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 from bs4 import BeautifulSoup, Comment, Tag
 
-from agentshield.models import Threat, ThreatType
+from goggles_ai.models import Threat, ThreatType
 
 # Instruction patterns common to prompt injection attacks
 _INSTRUCTION_RE = re.compile(

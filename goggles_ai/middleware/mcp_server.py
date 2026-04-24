@@ -6,8 +6,8 @@ Exposes three tools that any MCP-compatible agent can call:
   - scan_file    : scan a file at a local path
 
 Run standalone:
-    python -m agentshield.middleware.mcp_server
-    python -m agentshield.middleware.mcp_server --port 8765
+    python -m goggles_ai.middleware.mcp_server
+    python -m goggles_ai.middleware.mcp_server --port 8765
 
 Protocol: newline-delimited JSON over stdin/stdout (stdio transport) OR
           HTTP+SSE transport when --port is given.
@@ -25,8 +25,8 @@ import json
 import sys
 from typing import Any
 
-from agentshield.scanner import scan, scan_url as _scan_url, scan_file as _scan_file
-from agentshield.models import ScanResult
+from goggles_ai.scanner import scan, scan_url as _scan_url, scan_file as _scan_file
+from goggles_ai.models import ScanResult
 
 # ── Tool definitions (MCP schema) ─────────────────────────────────────────────
 

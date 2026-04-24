@@ -1,7 +1,7 @@
 """goggles-ai — inspection layer for AI agent inputs."""
 
-from agentshield.models import ScanResult, Threat, ThreatType
-from agentshield.scanner import scan, scan_file, scan_url
+from goggles_ai.models import ScanResult, Threat, ThreatType
+from goggles_ai.scanner import scan, scan_file, scan_url
 
 __version__ = "0.1.0"
 

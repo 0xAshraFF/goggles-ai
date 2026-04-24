@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from agentshield.detectors.image_triage import detect, _detect_mime_from_magic
+from goggles_ai.detectors.image_triage import detect, _detect_mime_from_magic
 
 
 # ── Image factory helpers ─────────────────────────────────────────────────────

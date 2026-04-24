@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import requests
 
-from agentshield.scanner import scan_url
+from goggles_ai.scanner import scan_url
 
 
 ATTACK_HTML = """

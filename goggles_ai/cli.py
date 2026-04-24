@@ -6,7 +6,7 @@ import argparse
 import json
 import sys
 
-from agentshield import scan, scan_file, scan_url
+from goggles_ai import scan, scan_file, scan_url
 
 
 def build_parser() -> argparse.ArgumentParser:

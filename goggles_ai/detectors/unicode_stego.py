@@ -10,8 +10,8 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 
-from agentshield.models import Threat, ThreatType
-from agentshield.utils.unicode_confusables import find_mixed_scripts, get_confusables
+from goggles_ai.models import Threat, ThreatType
+from goggles_ai.utils.unicode_confusables import find_mixed_scripts, get_confusables
 
 # ── Zero-width and invisible characters ──────────────────────────────────────
 

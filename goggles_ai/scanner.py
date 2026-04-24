@@ -19,10 +19,10 @@ from typing import Optional, Union
 
 import requests
 
-from agentshield.models import ScanResult, Threat, ThreatType
-from agentshield.detectors import css_hidden_text, html_injection, unicode_stego
-from agentshield.detectors import image_triage, stego_deep, cloaking
-from agentshield.sanitizers import html_sanitizer, image_sanitizer, text_sanitizer
+from goggles_ai.models import ScanResult, Threat, ThreatType
+from goggles_ai.detectors import css_hidden_text, html_injection, unicode_stego
+from goggles_ai.detectors import image_triage, stego_deep, cloaking
+from goggles_ai.sanitizers import html_sanitizer, image_sanitizer, text_sanitizer
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +266,7 @@ def scan_file(path: Union[str, Path], deep: bool = False) -> ScanResult:
     mime, _ = mimetypes.guess_type(filename)
     if not mime:
         # Try magic bytes
-        from agentshield.detectors.image_triage import _detect_mime_from_magic
+        from goggles_ai.detectors.image_triage import _detect_mime_from_magic
         mime = _detect_mime_from_magic(content) or "application/octet-stream"
 
     # Try to decode as text if MIME says so

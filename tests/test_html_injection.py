@@ -1,7 +1,7 @@
 """Tests for HTML comment and attribute injection detector."""
 
 import pytest
-from agentshield.detectors.html_injection import detect
+from goggles_ai.detectors.html_injection import detect
 
 # ── Attack samples ────────────────────────────────────────────────────────────
 

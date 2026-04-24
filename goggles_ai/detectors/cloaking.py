@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
 
-from agentshield.models import Threat, ThreatType
+from goggles_ai.models import Threat, ThreatType
 
 logger = logging.getLogger(__name__)
 

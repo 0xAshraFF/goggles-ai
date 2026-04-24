@@ -5,9 +5,9 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from agentshield.sanitizers.html_sanitizer import sanitize as html_sanitize
-from agentshield.sanitizers.image_sanitizer import sanitize as image_sanitize, strip_metadata_only
-from agentshield.sanitizers.text_sanitizer import (
+from goggles_ai.sanitizers.html_sanitizer import sanitize as html_sanitize
+from goggles_ai.sanitizers.image_sanitizer import sanitize as image_sanitize, strip_metadata_only
+from goggles_ai.sanitizers.text_sanitizer import (
     sanitize as text_sanitize,
     _strip_zero_width,
     _strip_variation_selectors,
@@ -221,7 +221,7 @@ class TestTextSanitizer:
         assert "Hello World" in clean
 
     def test_removes_all_zw_char_types(self):
-        from agentshield.detectors.unicode_stego import ZW_SET
+        from goggles_ai.detectors.unicode_stego import ZW_SET
         all_zw = "".join(ZW_SET)
         dirty = f"Start{all_zw}End"
         clean = _strip_zero_width(dirty)

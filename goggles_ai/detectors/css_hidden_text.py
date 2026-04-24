@@ -15,7 +15,7 @@ from typing import Optional
 
 from bs4 import BeautifulSoup, Tag
 
-from agentshield.models import Threat, ThreatType
+from goggles_ai.models import Threat, ThreatType
 
 # Regex matching prompt-injection payloads inside hidden text
 _INSTRUCTION_RE = re.compile(

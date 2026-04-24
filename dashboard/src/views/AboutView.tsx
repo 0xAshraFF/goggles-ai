@@ -78,30 +78,30 @@ export function AboutView() {
       <section>
         <h2 className="text-lg font-semibold text-gray-200 mb-4">Integrations</h2>
         <div className="space-y-4">
-          <CodeBlock title="Python SDK" code={`from agentshield.scanner import scan, scan_url
+          <CodeBlock title="Python SDK" code={`from goggles_ai.scanner import scan, scan_url
 
 result = scan_url("https://untrusted-site.com")
 if not result.safe:
     for threat in result.threats:
         print(f"[{threat.severity}] {threat.plain_summary}")`} />
-          <CodeBlock title="LangChain" code={`from agentshield.middleware.langchain import get_tools
+          <CodeBlock title="LangChain" code={`from goggles_ai.middleware.langchain import get_tools
 from langchain.agents import initialize_agent, AgentType
 
 tools = get_tools()
 agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS)
 agent.run("Is https://example.com safe to read?")`} />
           <CodeBlock title="Playwright" code={`from playwright.sync_api import sync_playwright
-from agentshield.middleware.playwright_hook import install_sync
+from goggles_ai.middleware.playwright_hook import install_sync
 
 with sync_playwright() as p:
     page = p.chromium.launch().new_page()
     hook = install_sync(page, on_threat=lambda e: print(e.threats))
     page.goto("https://untrusted-site.com")`} />
           <CodeBlock title="MCP Server" code={`# Start MCP server (stdio transport)
-python -m agentshield.middleware.mcp_server
+python -m goggles_ai.middleware.mcp_server
 
 # HTTP transport
-python -m agentshield.middleware.mcp_server --port 8765`} />
+python -m goggles_ai.middleware.mcp_server --port 8765`} />
         </div>
       </section>
     </div>

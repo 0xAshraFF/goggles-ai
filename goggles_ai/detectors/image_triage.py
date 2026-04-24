@@ -15,8 +15,8 @@ from typing import Literal, Optional
 
 import numpy as np
 
-from agentshield.models import Threat, ThreatType
-from agentshield.utils.entropy import channel_entropy, chi_square_lsb_score, rs_analysis_score, spa_score
+from goggles_ai.models import Threat, ThreatType
+from goggles_ai.utils.entropy import channel_entropy, chi_square_lsb_score, rs_analysis_score, spa_score
 
 # ── Magic byte signatures ─────────────────────────────────────────────────────
 
@@ -174,7 +174,7 @@ def _analyze_metadata(image_data: bytes, result: ImageTriageResult) -> None:
     except Exception:
         return
 
-    from agentshield.utils.entropy import shannon_entropy
+    from goggles_ai.utils.entropy import shannon_entropy
 
     # (tag_name, entropy, raw_preview, is_instruction_payload)
     flagged_fields: list[tuple[str, float, str, bool]] = []

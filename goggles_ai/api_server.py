@@ -12,10 +12,10 @@ Endpoints:
   WS   /ws/scan         — WebSocket: send URL/content, receive streaming scan events
 
 Run:
-    uvicorn agentshield.api_server:app --reload --port 8000
+    uvicorn goggles_ai.api_server:app --reload --port 8000
 
 Or:
-    python -m agentshield.api_server
+    python -m goggles_ai.api_server
 """
 
 from __future__ import annotations
@@ -36,8 +36,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from agentshield.scanner import scan, scan_url as _scan_url, scan_file as _scan_file
-from agentshield.models import ScanResult, Threat
+from goggles_ai.scanner import scan, scan_url as _scan_url, scan_file as _scan_file
+from goggles_ai.models import ScanResult, Threat
 
 # ── In-memory history store ───────────────────────────────────────────────────
 
@@ -406,4 +406,4 @@ async def ws_scan(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("agentshield.api_server:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("goggles_ai.api_server:app", host="0.0.0.0", port=8000, reload=True)

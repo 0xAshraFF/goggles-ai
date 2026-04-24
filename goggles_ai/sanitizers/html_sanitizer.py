@@ -6,7 +6,7 @@ import re
 
 from bs4 import BeautifulSoup, Comment, Tag
 
-from agentshield.detectors.css_hidden_text import _check_style_dict, _parse_inline_style, _parse_style_block, _element_matches
+from goggles_ai.detectors.css_hidden_text import _check_style_dict, _parse_inline_style, _parse_style_block, _element_matches
 
 # Attributes safe to keep on visible elements
 _SAFE_ATTRS = frozenset({

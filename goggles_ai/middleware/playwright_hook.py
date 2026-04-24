@@ -5,7 +5,7 @@ for threats, and either blocks, sanitizes, or passes through based on scan resul
 
 Usage (sync):
     from playwright.sync_api import sync_playwright
-    from agentshield.middleware.playwright_hook import install_sync
+    from goggles_ai.middleware.playwright_hook import install_sync
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -16,7 +16,7 @@ Usage (sync):
 
 Usage (async):
     from playwright.async_api import async_playwright
-    from agentshield.middleware.playwright_hook import install_async
+    from goggles_ai.middleware.playwright_hook import install_async
 
     async with async_playwright() as p:
         browser = await p.chromium.launch()
@@ -38,8 +38,8 @@ import mimetypes
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from agentshield.scanner import scan
-from agentshield.models import ScanResult, Threat
+from goggles_ai.scanner import scan
+from goggles_ai.models import ScanResult, Threat
 
 
 @dataclass

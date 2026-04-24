@@ -45,7 +45,7 @@ all = [
 ]
 
 [project.scripts]
-goggles-ai = "agentshield.cli:main"
+goggles-ai = "goggles_ai.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -61,8 +61,8 @@ select = ["E", "F", "I", "N", "W"]
 ignore = ["E501"]
 
 [tool.coverage.run]
-source = ["agentshield"]
-omit = ["agentshield/middleware/*", "agentshield/detectors/stego_deep.py"]
+source = ["goggles_ai"]
+omit = ["goggles_ai/middleware/*", "goggles_ai/detectors/stego_deep.py"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["agentshield"]
+packages = ["goggles_ai"]

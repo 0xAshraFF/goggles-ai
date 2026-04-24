@@ -148,7 +148,7 @@ def _time_it(fn, *args) -> float:
 # ── Suite benchmarks ──────────────────────────────────────────────────────────
 
 def bench_css(n: int, warmup: int, data_dir: Path) -> BenchResult:
-    from agentshield.detectors.css_hidden_text import detect
+    from goggles_ai.detectors.css_hidden_text import detect
 
     samples = _load_css_samples(data_dir, n + warmup)
     for s in samples[:warmup]:
@@ -161,7 +161,7 @@ def bench_css(n: int, warmup: int, data_dir: Path) -> BenchResult:
 
 
 def bench_unicode(n: int, warmup: int, data_dir: Path) -> BenchResult:
-    from agentshield.detectors.unicode_stego import detect
+    from goggles_ai.detectors.unicode_stego import detect
 
     samples = _load_unicode_samples(data_dir, n + warmup)
     for s in samples[:warmup]:
@@ -174,7 +174,7 @@ def bench_unicode(n: int, warmup: int, data_dir: Path) -> BenchResult:
 
 
 def bench_html_injection(n: int, warmup: int, data_dir: Path) -> BenchResult:
-    from agentshield.detectors.html_injection import detect
+    from goggles_ai.detectors.html_injection import detect
 
     samples = _load_css_samples(data_dir, n + warmup)  # reuse HTML samples
     for s in samples[:warmup]:
@@ -187,7 +187,7 @@ def bench_html_injection(n: int, warmup: int, data_dir: Path) -> BenchResult:
 
 
 def bench_image_triage(n: int, warmup: int, data_dir: Path) -> BenchResult:
-    from agentshield.detectors.image_triage import detect
+    from goggles_ai.detectors.image_triage import detect
 
     samples = _load_image_samples(data_dir, n + warmup)
     for s in samples[:warmup]:
@@ -200,7 +200,7 @@ def bench_image_triage(n: int, warmup: int, data_dir: Path) -> BenchResult:
 
 
 def bench_scan_html(n: int, warmup: int, data_dir: Path) -> BenchResult:
-    from agentshield.scanner import scan
+    from goggles_ai.scanner import scan
 
     samples = _load_css_samples(data_dir, n + warmup)
     for s in samples[:warmup]:
@@ -213,7 +213,7 @@ def bench_scan_html(n: int, warmup: int, data_dir: Path) -> BenchResult:
 
 
 def bench_scan_image(n: int, warmup: int, data_dir: Path) -> BenchResult:
-    from agentshield.scanner import scan
+    from goggles_ai.scanner import scan
 
     samples = _load_image_samples(data_dir, n + warmup)
     for s in samples[:warmup]:
@@ -228,7 +228,7 @@ def bench_scan_image(n: int, warmup: int, data_dir: Path) -> BenchResult:
 # ── Tier timing summary from scanner ─────────────────────────────────────────
 
 def bench_tier_timings(n: int, warmup: int, data_dir: Path) -> dict[str, BenchResult]:
-    from agentshield.scanner import scan
+    from goggles_ai.scanner import scan
 
     html_samples = _load_css_samples(data_dir, n + warmup)
     img_samples = _load_image_samples(data_dir, n + warmup)
@@ -318,7 +318,7 @@ def run_benchmark(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="GogglesAI latency benchmark")
+    parser = argparse.ArgumentParser(description="goggles-ai latency benchmark")
     parser.add_argument("--n", type=int, default=100, help="Samples per benchmark (default: 100)")
     parser.add_argument("--warmup", type=int, default=5, help="Warmup iterations (default: 5)")
     parser.add_argument(
@@ -331,7 +331,7 @@ def main() -> None:
     parser.add_argument("--out", default=None, help="Output JSON path")
     args = parser.parse_args()
 
-    print(f"\nGogglesAI Latency Benchmark  (n={args.n}, warmup={args.warmup})")
+    print(f"\ngoggles-ai Latency Benchmark  (n={args.n}, warmup={args.warmup})")
     print("=" * 72)
 
     report = run_benchmark(
