@@ -154,3 +154,22 @@ If you’re building agentic systems, I’d love feedback.
 - Add rendered-page scanning.
 - Introduce policy actions to the API and UI.
 - Turn the dashboard into a product walkthrough instead of a dev console.
+
+## Progress Log
+
+### Completed
+- Renamed the public project branding to `goggles-ai`.
+- Renamed the Python package namespace to `goggles_ai`.
+- Added a working CLI entrypoint for local scans.
+- Fixed URL fetch failures so they no longer report as safe.
+- Returned sanitized output for URL scans where applicable.
+- Fixed the dashboard WebSocket path to surface the full scan result.
+- Added seeded demo scenarios for the dashboard walkthrough.
+- Wrote a founder-style announcement draft.
+- Updated the README to match the current product story.
+
+### Pending
+- Rendered browser scanning with Playwright.
+- OCR and multimodal extraction.
+- Stronger policy enforcement and action routing.
+- Team workflows, audit logs, and hosted gateway features.
