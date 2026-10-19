@@ -10,10 +10,13 @@ export interface Threat {
   location: string
 }
 
+export type Action = 'allow' | 'sanitize' | 'block'
+
 export interface ScanResponse {
   id: string
   timestamp: number
-  safe: boolean
+  hidden_content_found: boolean
+  action: Action
   confidence: number
   threat_count: number
   max_severity: string | null
@@ -28,7 +31,8 @@ export interface HistoryItem {
   timestamp: number
   source: string
   source_hint: string
-  safe: boolean
+  hidden_content_found: boolean
+  action: Action
   threat_count: number
   max_severity: string | null
   scan_time_ms: number
@@ -43,8 +47,7 @@ export interface HistoryPage {
 
 export interface Stats {
   total_scans: number
-  safe_count: number
-  unsafe_count: number
+  action_counts: Record<Action, number>
   threat_type_counts: Record<string, number>
   severity_counts: Record<string, number>
   mean_scan_time_ms: number

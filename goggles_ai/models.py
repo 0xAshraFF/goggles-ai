@@ -195,10 +195,71 @@ class Threat(BaseModel):
         )
 
 
+Action = Literal["allow", "sanitize", "block"]
+
+# Character-level tricks in the text itself, as opposed to hidden markup or metadata
+TEXT_OBFUSCATION_TYPES: frozenset[str] = frozenset({
+    ThreatType.ZERO_WIDTH_CHARS.value,
+    ThreatType.HOMOGLYPH.value,
+    ThreatType.VARIATION_SELECTOR.value,
+})
+
+
+class ScanPolicy(BaseModel):
+    """Decides what an agent should do with scanned content.
+
+    goggles-ai only inspects hidden channels (CSS-hidden text, zero-width chars,
+    homoglyphs, markup injection, image stego, cloaking). An "allow" action means
+    nothing hidden was found — it does NOT mean the visible text is free of prompt
+    injection. Pair goggles-ai with a semantic classifier for that.
+    """
+
+    on_text_obfuscation: Literal["sanitize", "block"] = Field(
+        "block",
+        description=(
+            "Action for character-level tricks (zero-width splits, tag chars, bidi overrides, "
+            "homoglyph tokens). These almost never occur in real text, so the default blocks."
+        ),
+    )
+    on_structural_hiding: Literal["sanitize", "block"] = Field(
+        "sanitize",
+        description=(
+            "Action for hidden markup and metadata (CSS-hidden text, comments, attributes, "
+            "image payloads). The visible content is still useful, so the default strips it."
+        ),
+    )
+    block_on: frozenset[str] = Field(
+        frozenset({ThreatType.FETCH_FAILURE.value, ThreatType.DYNAMIC_CLOAKING.value}),
+        description="Threat types that always block, since sanitizing cannot remove them",
+    )
+
+    def decide(self, threats: list["Threat"], sanitized_content: Optional[str]) -> Action:
+        if not threats:
+            return "allow"
+        if any(t.type in self.block_on for t in threats) or sanitized_content is None:
+            return "block"
+        text = any(t.type in TEXT_OBFUSCATION_TYPES for t in threats)
+        structural = any(t.type not in TEXT_OBFUSCATION_TYPES for t in threats)
+        if (text and self.on_text_obfuscation == "block") or (
+            structural and self.on_structural_hiding == "block"
+        ):
+            return "block"
+        return "sanitize"
+
+
+DEFAULT_POLICY = ScanPolicy()
+
+
 class ScanResult(BaseModel):
     """Complete scan result including all detected threats and sanitized content."""
 
-    safe: bool = Field(description="True if no threats were detected")
+    hidden_content_found: bool = Field(
+        description=(
+            "True if any hidden-channel threat was detected. False does NOT mean the "
+            "visible text is free of prompt injection."
+        )
+    )
+    action: Action = Field(description="Policy decision: allow, sanitize, or block")
     confidence: float = Field(ge=0.0, le=1.0, description="Confidence in the verdict (0–1)")
     scan_time_ms: int = Field(description="Total scan time in milliseconds")
     threats: list[Threat] = Field(default_factory=list)
@@ -232,7 +293,8 @@ class ScanSummary(BaseModel):
     url: Optional[str] = None
     filename: Optional[str] = None
     timestamp: str
-    safe: bool
+    hidden_content_found: bool
+    action: Action
     threat_count: int
     max_severity: Optional[str] = None
     scan_time_ms: int

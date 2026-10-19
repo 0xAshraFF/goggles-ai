@@ -8,7 +8,7 @@ Provides three BaseTool subclasses that plug into any LangChain agent:
 
     tools = [ScanUrlTool(), ScanContentTool(), ScanFileTool()]
     agent = initialize_agent(tools, ChatOpenAI(), agent=AgentType.OPENAI_FUNCTIONS)
-    agent.run("Is https://example.com safe for my AI agent to read?")
+    agent.run("Does https://example.com hide anything from me?")
 
 All tools return a compact plain-text summary (safe for agent context windows) and
 attach the full ScanResult JSON as a structured artifact when LangChain supports it.
@@ -35,13 +35,17 @@ from goggles_ai.scanner import scan, scan_url as _scan_url, scan_file as _scan_f
 from goggles_ai.models import ScanResult
 
 
+def _status_line(result: ScanResult) -> str:
+    if result.action == "allow":
+        return "ALLOW — no hidden content found (visible text is not checked for prompt injection)."
+    verb = "SANITIZE" if result.action == "sanitize" else "BLOCK"
+    return f"{verb} — {len(result.threats)} threat(s) found (max severity: {result.max_severity})."
+
+
 def _format_result(result: ScanResult, include_json: bool = False) -> str:
     lines: list[str] = []
 
-    if result.safe:
-        lines.append("SAFE — no threats detected.")
-    else:
-        lines.append(f"UNSAFE — {len(result.threats)} threat(s) found (max severity: {result.max_severity}).")
+    lines.append(_status_line(result))
 
     lines.append(f"Confidence: {result.confidence:.0%}  |  Scan time: {result.scan_time_ms:.1f}ms")
 
@@ -85,7 +89,7 @@ if _LANGCHAIN_AVAILABLE:
     class ScanUrlTool(BaseTool):
         name: str = "scan_url"
         description: str = (
-            "Fetch a URL and scan it for prompt injection attacks, steganography in images, "
+            "Fetch a URL and scan it for hidden prompt injection, steganography in images, "
             "cloaking (serving different content to AI agents vs humans), and other perception-layer "
             "threats. Use this before letting an AI agent read content from an untrusted URL."
         )
@@ -114,7 +118,7 @@ if _LANGCHAIN_AVAILABLE:
     class ScanContentTool(BaseTool):
         name: str = "scan_content"
         description: str = (
-            "Scan raw text, HTML, or image content for prompt injection, hidden instructions, "
+            "Scan raw text, HTML, or image content for hidden prompt injection, hidden instructions, "
             "unicode steganography, and image-based attacks. Pass text directly as a string; "
             "pass images as base64-encoded strings with content_type='image/png' or 'image/jpeg'."
         )
@@ -150,7 +154,7 @@ if _LANGCHAIN_AVAILABLE:
     class ScanFileTool(BaseTool):
         name: str = "scan_file"
         description: str = (
-            "Scan a local file for prompt injection, steganography, and other threats. "
+            "Scan a local file for hidden prompt injection, steganography, and other threats. "
             "Supports HTML, plain text, PNG, JPEG, GIF, WebP, BMP, and TIFF files. "
             "Provide an absolute or relative file path."
         )

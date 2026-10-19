@@ -1,38 +1,33 @@
-# goggles-ai Launch Draft
+# goggles-ai Launch Post
 
-Building agents that browse the web and ingest untrusted context is exciting, but it also creates a new security problem:
+AI agents read things humans never see.
 
-machines can read instructions humans never notice.
+A page can look clean in a browser and still carry instructions for the model: text hidden with CSS, zero-width characters, lookalike letters from other alphabets, payloads in HTML comments, alt text, image metadata, or different content served only to bots.
 
-That is the idea behind `goggles-ai`.
+I'm open-sourcing `goggles-ai` to deal with that layer. It's a deterministic hidden-channel and steganography sanitizer for MCP, browser, and LLM agents:
 
-goggles-ai is an open-source inspection layer for AI agent inputs. It scans pages, text, and images before they reach an agent, helping surface hidden prompt injections, cloaked content, and covert payloads that can quietly influence model behavior.
+- finds content the model can read but a human can't see
+- strips it and returns the visible content
+- returns a policy decision: `allow`, `sanitize`, or `block`
+- ships as a Python library, a CLI, and an MCP server, with Playwright and LangChain hooks
 
-The core thesis is simple:
+It's rule-based and statistical, with no model downloads.
 
-`AI agents need input security, not just output guardrails.`
+Numbers, not vibes: I obfuscated all 263 injections in deepset/prompt-injections with zero-width splits and lookalike letters from Unicode's official confusables table. goggles stopped all of them. On 815 benign samples (text in 18 languages, emoji sequences, everyday HTML), it raised zero false flags. A popular injection classifier caught 30% of instructions hidden in CSS; goggles stripped 100%. Benchmark and code are in the repo.
 
-Today the project can already inspect:
-- hidden HTML and CSS payloads
-- zero-width and Unicode-based text attacks
-- suspicious metadata and image stego signals
-- simple bot-vs-human cloaking patterns
+What it doesn't do: detect plain-text prompt injection. If an attack is written in visible text, goggles-ai will let it through. Add a semantic classifier for that; the README has a short recipe. One surprise from the benchmark: obfuscation didn't blind the classifier, it made it more suspicious. So goggles isn't there to boost your classifier. It catches a different class of attack.
 
-Still early, but the direction feels important.
+```bash
+pip install goggles-ai
+python -m goggles_ai.middleware.mcp_server
+```
 
-I think there is a real category forming around securing what agents read before they act.
+Repo: https://github.com/0xAshraFF/goggles-ai
 
-If you are building agentic systems, browser agents, or retrieval-heavy AI workflows, I would love to hear how you are thinking about this layer.
+If you're building browser agents or MCP tools, I'd like to hear which hidden-content tricks you've run into that it misses.
 
-Repo:
-[https://github.com/0xAshraFF/goggles-ai](https://github.com/0xAshraFF/goggles-ai)
+## Short Version
 
-## Shorter Version
+I'm open-sourcing `goggles-ai`: a deterministic sanitizer that strips hidden instructions (CSS-hidden text, zero-width characters, homoglyphs, comment and metadata payloads, image stego) from what your agent reads, then tells it to allow, sanitize, or block. Ships as a library, CLI, and MCP server. It doesn't catch visible prompt injection; pair it with a classifier for that.
 
-I’m open-sourcing `goggles-ai`, an inspection layer for AI agent inputs.
-
-It scans untrusted pages, text, and images for hidden prompt injections and covert payloads before that content reaches an agent.
-
-The bet: input security for AI agents is going to become its own category.
-
-Would love feedback from anyone building browser agents, MCP tools, or retrieval-heavy AI products.
+https://github.com/0xAshraFF/goggles-ai

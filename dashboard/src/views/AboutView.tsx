@@ -81,7 +81,7 @@ export function AboutView() {
           <CodeBlock title="Python SDK" code={`from goggles_ai.scanner import scan, scan_url
 
 result = scan_url("https://untrusted-site.com")
-if not result.safe:
+if result.action != "allow":
     for threat in result.threats:
         print(f"[{threat.severity}] {threat.plain_summary}")`} />
           <CodeBlock title="LangChain" code={`from goggles_ai.middleware.langchain import get_tools
@@ -89,7 +89,7 @@ from langchain.agents import initialize_agent, AgentType
 
 tools = get_tools()
 agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS)
-agent.run("Is https://example.com safe to read?")`} />
+agent.run("Does https://example.com hide anything from me?")`} />
           <CodeBlock title="Playwright" code={`from playwright.sync_api import sync_playwright
 from goggles_ai.middleware.playwright_hook import install_sync
 

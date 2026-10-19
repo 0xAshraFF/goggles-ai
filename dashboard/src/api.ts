@@ -1,4 +1,4 @@
-import type { ScanResponse, HistoryPage, Stats } from './types'
+import type { Action, ScanResponse, HistoryPage, Stats } from './types'
 
 const BASE = ''  // proxied by Vite dev server
 
@@ -36,9 +36,9 @@ export async function scanFile(file: File, deep = false): Promise<ScanResponse> 
   return res.json()
 }
 
-export async function getHistory(page = 1, pageSize = 20, safeOnly?: boolean): Promise<HistoryPage> {
+export async function getHistory(page = 1, pageSize = 20, action?: Action): Promise<HistoryPage> {
   const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
-  if (safeOnly !== undefined) params.set('safe_only', String(safeOnly))
+  if (action !== undefined) params.set('action', action)
   const res = await fetch(`${BASE}/history?${params}`)
   if (!res.ok) throw new Error(await res.text())
   return res.json()

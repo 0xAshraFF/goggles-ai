@@ -302,24 +302,25 @@ export function ScanView() {
 }
 
 function ScanResultPanel({ result }: { result: ScanResponse }) {
-  const enforcement = result.safe ? 'Allow clean content' : result.sanitized_content ? 'Sanitize before agent read' : 'Block or review before agent read'
+  const allowed = result.action === 'allow'
+  const enforcement = allowed ? 'No hidden content found (visible text not checked for prompt injection)' : result.action === 'sanitize' ? 'Sanitize before agent read' : 'Block or review before agent read'
 
   return (
     <div className="space-y-4">
       {/* Summary bar */}
       <div className={`rounded-xl border p-5 flex items-start gap-4 ${
-        result.safe
+        allowed
           ? 'border-green-700 bg-green-900/20'
           : 'border-red-700 bg-red-900/20'
       }`}>
-        {result.safe
+        {allowed
           ? <Shield size={28} className="text-green-400 shrink-0 mt-0.5" />
           : <ShieldAlert size={28} className="text-red-400 shrink-0 mt-0.5" />
         }
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className={`text-lg font-bold ${result.safe ? 'text-green-300' : 'text-red-300'}`}>
-              {result.safe ? 'Safe' : `Unsafe — ${result.threat_count} threat${result.threat_count !== 1 ? 's' : ''}`}
+            <span className={`text-lg font-bold ${allowed ? 'text-green-300' : 'text-red-300'}`}>
+              {allowed ? 'Allow' : `${result.action === 'sanitize' ? 'Sanitize' : 'Block'} — ${result.threat_count} threat${result.threat_count !== 1 ? 's' : ''}`}
             </span>
             {result.max_severity && <SeverityBadge severity={result.max_severity} />}
           </div>

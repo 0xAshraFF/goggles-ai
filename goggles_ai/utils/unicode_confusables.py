@@ -2,7 +2,8 @@
 
 Covers the most common Latin–Cyrillic and Latin–Greek visual confusables used
 in homoglyph attacks. This is a curated subset; the full Unicode confusables.txt
-(~7500 entries) can be loaded via load_full_confusables() if the file is present.
+is subset to ASCII targets in confusables_ascii.txt (tools/build_confusables.py)
+and merged in at load time.
 """
 
 from __future__ import annotations
@@ -10,7 +11,7 @@ from __future__ import annotations
 import unicodedata
 from functools import lru_cache
 from pathlib import Path
-
+from typing import Optional
 
 # Curated high-risk confusables: char → ASCII equivalent
 # Cyrillic characters that look like Latin letters
@@ -40,6 +41,15 @@ _CYRILLIC_TO_LATIN: dict[str, str] = {
     "У": "Y",  # У CYRILLIC CAPITAL U (looks like Y)
     "у": "y",  # у CYRILLIC SMALL U
     "в": "B",  # в CYRILLIC SMALL VE (looks like 6 or B)
+    "Ѕ": "S",  # Ѕ CYRILLIC CAPITAL DZE
+    "І": "I",  # І CYRILLIC CAPITAL BYELORUSSIAN-UKRAINIAN I
+    "Ј": "J",  # Ј CYRILLIC CAPITAL JE
+    "Һ": "H",  # Һ CYRILLIC CAPITAL SHHA
+    "һ": "h",  # һ CYRILLIC SMALL SHHA
+    "Ԛ": "Q",  # Ԛ CYRILLIC CAPITAL QA
+    "ԛ": "q",  # ԛ CYRILLIC SMALL QA
+    "Ԝ": "W",  # Ԝ CYRILLIC CAPITAL WE
+    "ԝ": "w",  # ԝ CYRILLIC SMALL WE
     "ѕ": "s",  # ѕ CYRILLIC SMALL DZE
     "і": "i",  # і CYRILLIC SMALL I
     "ј": "j",  # ј CYRILLIC SMALL JE
@@ -79,8 +89,6 @@ _GREEK_TO_LATIN: dict[str, str] = {
 
 # Additional lookalikes from various scripts
 _OTHER_CONFUSABLES: dict[str, str] = {
-    "ǐ": "i",   # ǐ LATIN SMALL I WITH CARON
-    "ı": "i",   # ı LATIN SMALL DOTLESS I
     "ɡ": "g",   # ɡ LATIN SMALL SCRIPT G
     "ʌ": "v",   # ʌ LATIN SMALL TURNED V
     "ʀ": "r",   # ʀ LATIN LETTER SMALL CAPITAL R
@@ -165,10 +173,10 @@ SCRIPT_RANGES: dict[str, tuple[int, int]] = {
 
 @lru_cache(maxsize=1)
 def get_confusables() -> dict[str, str]:
-    """Return the full confusables mapping, augmenting with any local file."""
+    """Return the curated map merged with the bundled TR39 ASCII subset."""
     mapping = dict(CONFUSABLES)
 
-    confusables_path = Path(__file__).parent / "confusables.txt"
+    confusables_path = Path(__file__).parent / "confusables_ascii.txt"
     if confusables_path.exists():
         _load_unicode_confusables_txt(confusables_path, mapping)
 
@@ -201,7 +209,10 @@ def _load_unicode_confusables_txt(path: Path, mapping: dict[str, str]) -> None:
 
 
 def normalize_text(text: str) -> str:
-    """Replace known confusable characters with their ASCII equivalents.
+    """Replace confusable characters with ASCII equivalents inside suspicious tokens.
+
+    Only tokens flagged by find_suspicious_tokens() are rewritten, so legitimate
+    Cyrillic, Greek, or fullwidth text is left untouched.
 
     Args:
         text: Input string potentially containing homoglyph attacks.
@@ -210,10 +221,129 @@ def normalize_text(text: str) -> str:
         Normalized string with confusables replaced by ASCII equivalents.
     """
     mapping = get_confusables()
-    result = []
+    spans = find_suspicious_tokens(text)
+    if not spans:
+        return text
+    out: list[str] = []
+    last = 0
+    for start, end in spans:
+        out.append(text[last:start])
+        out.append("".join(mapping.get(ch, ch) for ch in text[start:end]))
+        last = end
+    out.append(text[last:])
+    return "".join(out)
+
+
+# Scripts whose letters are used to impersonate Latin inside a word
+_LOOKALIKE_SCRIPTS = frozenset({"cyrillic", "greek", "armenian", "georgian"})
+
+
+def _is_fullwidth_latin(ch: str) -> bool:
+    return 0xFF21 <= ord(ch) <= 0xFF3A or 0xFF41 <= ord(ch) <= 0xFF5A
+
+
+def _is_token_char(ch: str) -> bool:
+    # Letters, marks, digits, and invisible format chars (so "I​gnore" is one token)
+    return unicodedata.category(ch)[0] in "LMN" or unicodedata.category(ch) == "Cf"
+
+
+def _tokens(text: str) -> list[tuple[int, int]]:
+    spans: list[tuple[int, int]] = []
+    start = None
+    for i, ch in enumerate(text):
+        if _is_token_char(ch):
+            if start is None:
+                start = i
+        elif start is not None:
+            spans.append((start, i))
+            start = None
+    if start is not None:
+        spans.append((start, len(text)))
+    return spans
+
+
+def _units(text: str) -> list[tuple[int, int]]:
+    """Tokens, with letter-spaced runs ("S a y t h a t", 3+ single letters) merged into one."""
+    units: list[tuple[int, int]] = []
+    run: list[tuple[int, int]] = []
+
+    def flush() -> None:
+        if len(run) >= 3:
+            units.append((run[0][0], run[-1][1]))
+        else:
+            units.extend(run)
+        run.clear()
+
+    for start, end in _tokens(text):
+        single = sum(ch.isalpha() for ch in text[start:end]) == 1
+        if single and run and text[run[-1][1]:start] == " ":
+            run.append((start, end))
+            continue
+        flush()
+        if single:
+            run.append((start, end))
+        else:
+            units.append((start, end))
+    flush()
+    return units
+
+
+def _latin_dominant(text: str) -> bool:
+    """True if at least half the letters in *text* are Latin (fullwidth Latin counts)."""
+    latin = total = 0
     for ch in text:
-        result.append(mapping.get(ch, ch))
-    return "".join(result)
+        if not ch.isalpha():
+            continue
+        total += 1
+        if detect_script(ch) == "latin" or _is_fullwidth_latin(ch):
+            latin += 1
+    return total > 0 and latin * 2 >= total
+
+
+def find_suspicious_tokens(text: str) -> list[tuple[int, int]]:
+    """Return (start, end) spans of tokens that look like homoglyph attacks.
+
+    A token is suspicious when it:
+      - mixes Latin letters with confusables or lookalike-script letters
+        ("pаypal" with Cyrillic а), or
+      - consists only of 2+ non-ASCII confusables while the surrounding text is
+        predominantly Latin ("The ΑΙ system", fullwidth "ｉｇｎｏｒｅ").
+
+    Short Greek+Latin symbols (μm, Δx, μmol) and single letters (α, Ω) are exempt,
+    except inside letter-spaced runs ("S а y"), which are checked as one word.
+
+    Whole-script text such as a Russian or Greek sentence is not flagged.
+    """
+    mapping = get_confusables()
+    latin_context: Optional[bool] = None
+    spans: list[tuple[int, int]] = []
+
+    for start, end in _units(text):
+        letters = [ch for ch in text[start:end] if ch.isalpha()]
+        if not letters:
+            continue
+        has_latin = any(ord(ch) < 128 or (detect_script(ch) == "latin" and ch not in mapping)
+                        for ch in letters)
+        foreign = [ch for ch in letters
+                   if (ord(ch) > 127 and ch in mapping) or detect_script(ch) in _LOOKALIKE_SCRIPTS]
+        if not foreign:
+            continue
+        if has_latin:
+            # Short Greek+Latin symbols are scientific notation (μm, Δx, πr), not attacks
+            if len(letters) <= 3 and all(detect_script(ch) == "greek" for ch in foreign):
+                continue
+            # Micro prefix on a unit: μmol, μg
+            if foreign == ["μ"] and letters[0] == "μ" and len(letters) <= 4:
+                continue
+            spans.append((start, end))
+            continue
+        # Single letters are variables or symbols (α, β, Ω), not disguised words
+        if len(letters) >= 2 and all(ord(ch) > 127 and ch in mapping for ch in letters):
+            if latin_context is None:
+                latin_context = _latin_dominant(text)
+            if latin_context:
+                spans.append((start, end))
+    return spans
 
 
 def detect_script(char: str) -> str:

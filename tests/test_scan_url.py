@@ -21,13 +21,14 @@ ATTACK_HTML = """
 
 
 class TestScanUrl:
-    def test_fetch_failure_is_not_reported_as_safe(self):
+    def test_fetch_failure_blocks(self):
         session = Mock()
         session.get.side_effect = requests.ConnectionError("connection refused")
 
         result = scan_url("https://broken.example", session=session)
 
-        assert not result.safe
+        assert result.action == "block"
+        assert not result.hidden_content_found
         assert result.threats
         assert result.threats[0].type == "fetch_failure"
         assert result.sanitized_content is None

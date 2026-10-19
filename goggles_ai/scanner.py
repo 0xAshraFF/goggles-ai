@@ -19,7 +19,7 @@ from typing import Optional, Union
 
 import requests
 
-from goggles_ai.models import ScanResult, Threat, ThreatType
+from goggles_ai.models import DEFAULT_POLICY, ScanPolicy, ScanResult, Threat, ThreatType
 from goggles_ai.detectors import css_hidden_text, html_injection, unicode_stego
 from goggles_ai.detectors import image_triage, stego_deep, cloaking
 from goggles_ai.sanitizers import html_sanitizer, image_sanitizer, text_sanitizer
@@ -47,14 +47,16 @@ def scan(
     content_type: str = "text/html",
     filename: str = "",
     deep: bool = False,
+    policy: Optional[ScanPolicy] = None,
 ) -> ScanResult:
-    """Scan raw content for prompt injection and steganography threats.
+    """Scan raw content for hidden-channel injection and steganography threats.
 
     Args:
         content: HTML string, plain text, or raw image bytes.
         content_type: MIME type hint (e.g. 'text/html', 'image/png').
         filename: Optional filename for extension-based type detection.
         deep: If True, force Tier 3 analysis even if Tier 2 score is borderline.
+        policy: Decides the result's action. Defaults to DEFAULT_POLICY.
 
     Returns:
         ScanResult with threats, sanitized content, and timing info.
@@ -151,23 +153,14 @@ def scan(
         sanitized = text_sanitizer.sanitize(text_content)
 
     # ── Build result ───────────────────────────────────────────────────────
-    total_ms = _ms(start)
-    confidence = _compute_confidence(all_threats)
-
-    return ScanResult(
-        safe=len(all_threats) == 0,
-        confidence=confidence,
-        scan_time_ms=total_ms,
-        threats=all_threats,
-        sanitized_content=sanitized,
-        tier_timings=tier_timings,
-    )
+    return _build_result(all_threats, sanitized, tier_timings, start, policy)
 
 
 def scan_url(
     url: str,
     deep: bool = False,
     session: Optional[requests.Session] = None,
+    policy: Optional[ScanPolicy] = None,
 ) -> ScanResult:
     """Fetch a URL and scan it. Also runs cloaking detection.
 
@@ -175,6 +168,7 @@ def scan_url(
         url: Target URL.
         deep: Force Tier 3 analysis.
         session: Optional requests.Session for testing.
+        policy: Decides the result's action. Defaults to DEFAULT_POLICY.
 
     Returns:
         ScanResult with all detected threats including cloaking.
@@ -206,20 +200,13 @@ def scan_url(
             outcome="blocked",
             location=url,
         )
-        return ScanResult(
-            safe=False,
-            confidence=0.98,
-            scan_time_ms=_ms(start),
-            threats=[fetch_failure],
-            sanitized_content=None,
-            tier_timings={},
-        )
+        return _build_result([fetch_failure], None, {}, start, policy, confidence=0.98)
 
     # Determine filename hint from URL
     filename = url.rsplit("/", 1)[-1].split("?")[0] if "/" in url else ""
 
     # Scan content
-    result = scan(content, content_type=content_type, filename=filename, deep=deep)
+    result = scan(content, content_type=content_type, filename=filename, deep=deep, policy=policy)
     all_threats.extend(result.threats)
     tier_timings.update(result.tier_timings)
     sanitized = result.sanitized_content
@@ -231,25 +218,20 @@ def scan_url(
         all_threats.extend(cloak_result.threats)
         tier_timings["t1_cloaking"] = _ms(t1_cloak_start)
 
-    total_ms = _ms(start)
-    confidence = _compute_confidence(all_threats)
-
-    return ScanResult(
-        safe=len(all_threats) == 0,
-        confidence=confidence,
-        scan_time_ms=total_ms,
-        threats=all_threats,
-        sanitized_content=sanitized,
-        tier_timings=tier_timings,
-    )
+    return _build_result(all_threats, sanitized, tier_timings, start, policy)
 
 
-def scan_file(path: Union[str, Path], deep: bool = False) -> ScanResult:
+def scan_file(
+    path: Union[str, Path],
+    deep: bool = False,
+    policy: Optional[ScanPolicy] = None,
+) -> ScanResult:
     """Scan a local file.
 
     Args:
         path: Path to the file.
         deep: Force Tier 3 analysis for images.
+        policy: Decides the result's action. Defaults to DEFAULT_POLICY.
 
     Returns:
         ScanResult with all detected threats.
@@ -273,11 +255,11 @@ def scan_file(path: Union[str, Path], deep: bool = False) -> ScanResult:
     if mime and mime.startswith("text/"):
         try:
             text_content = content.decode("utf-8")
-            return scan(text_content, content_type=mime, filename=filename, deep=deep)
+            return scan(text_content, content_type=mime, filename=filename, deep=deep, policy=policy)
         except UnicodeDecodeError:
             pass
 
-    return scan(content, content_type=mime or "application/octet-stream", filename=filename, deep=deep)
+    return scan(content, content_type=mime or "application/octet-stream", filename=filename, deep=deep, policy=policy)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -285,6 +267,27 @@ def scan_file(path: Union[str, Path], deep: bool = False) -> ScanResult:
 def _ms(start: float) -> int:
     """Return milliseconds elapsed since *start*."""
     return max(0, int((time.monotonic() - start) * 1000))
+
+
+def _build_result(
+    threats: list[Threat],
+    sanitized: Optional[str],
+    tier_timings: dict[str, int],
+    start: float,
+    policy: Optional[ScanPolicy],
+    confidence: Optional[float] = None,
+) -> ScanResult:
+    """Assemble a ScanResult, letting the policy decide the action."""
+    policy = policy or DEFAULT_POLICY
+    return ScanResult(
+        hidden_content_found=any(t.type != ThreatType.FETCH_FAILURE.value for t in threats),
+        action=policy.decide(threats, sanitized),
+        confidence=confidence if confidence is not None else _compute_confidence(threats),
+        scan_time_ms=_ms(start),
+        threats=threats,
+        sanitized_content=sanitized,
+        tier_timings=tier_timings,
+    )
 
 
 def _looks_like_html(text: str) -> bool:

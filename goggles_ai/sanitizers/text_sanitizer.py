@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import unicodedata
 
-from goggles_ai.detectors.unicode_stego import ZW_SET
+from goggles_ai.detectors.unicode_stego import _is_legitimate_vs, suspicious_zw_positions
 from goggles_ai.utils.unicode_confusables import normalize_text
 
 
 def sanitize(text: str, normalize_homoglyphs: bool = True) -> str:
-    """Remove all zero-width characters and optionally normalize homoglyphs.
+    """Remove hidden characters and optionally normalize homoglyph tokens.
 
     Args:
         text: Input string potentially containing zero-width characters,
@@ -37,14 +37,20 @@ def sanitize(text: str, normalize_homoglyphs: bool = True) -> str:
 
 
 def _strip_zero_width(text: str) -> str:
-    """Remove all zero-width and invisible Unicode characters."""
-    return "".join(ch for ch in text if ch not in ZW_SET)
+    """Remove zero-width characters, keeping legitimate emoji/Indic/Arabic joiners."""
+    drop = set(suspicious_zw_positions(text))
+    if text.startswith("﻿"):
+        drop.add(0)  # a leading BOM is harmless but still not content
+    return "".join(ch for i, ch in enumerate(text) if i not in drop)
 
 
 def _strip_variation_selectors(text: str) -> str:
-    """Remove Unicode variation selector characters."""
+    """Remove variation selectors, keeping a single VS15/VS16 after an emoji."""
     cleaned = []
-    for ch in text:
+    for i, ch in enumerate(text):
+        if _is_legitimate_vs(text, i):
+            cleaned.append(ch)
+            continue
         cp = ord(ch)
         if 0xFE00 <= cp <= 0xFE0F:
             continue
