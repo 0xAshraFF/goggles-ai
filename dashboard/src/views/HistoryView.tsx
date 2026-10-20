@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Trash2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getHistory, clearHistory, getHistoryItem } from '../api'
-import type { HistoryItem, ScanResponse } from '../types'
+import type { Action, HistoryItem, ScanResponse } from '../types'
 import { SeverityBadge } from '../components/SeverityBadge'
 import { ThreatCard } from '../components/ThreatCard'
 
@@ -9,7 +9,7 @@ export function HistoryView() {
   const [items, setItems] = useState<HistoryItem[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [filter, setFilter] = useState<'all' | 'unsafe' | 'safe'>('all')
+  const [filter, setFilter] = useState<'all' | Action>('all')
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState<ScanResponse | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
@@ -19,8 +19,7 @@ export function HistoryView() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const safeOnly = filter === 'safe' ? true : filter === 'unsafe' ? false : undefined
-      const data = await getHistory(page, PAGE_SIZE, safeOnly)
+      const data = await getHistory(page, PAGE_SIZE, filter === 'all' ? undefined : filter)
       setItems(data.items)
       setTotal(data.total)
     } catch {
@@ -71,7 +70,7 @@ export function HistoryView() {
 
       {/* Filter */}
       <div className="flex gap-1 bg-gray-800 rounded-lg p-1 w-fit">
-        {(['all', 'unsafe', 'safe'] as const).map(f => (
+        {(['all', 'allow', 'sanitize', 'block'] as const).map(f => (
           <button
             key={f}
             onClick={() => { setFilter(f); setPage(1) }}
@@ -102,7 +101,7 @@ export function HistoryView() {
               }`}
             >
               <div className="flex items-start gap-3">
-                <span className={`mt-1 w-2 h-2 rounded-full shrink-0 ${item.safe ? 'bg-green-400' : 'bg-red-400'}`} />
+                <span className={`mt-1 w-2 h-2 rounded-full shrink-0 ${item.action === 'allow' ? 'bg-green-400' : item.action === 'sanitize' ? 'bg-amber-400' : 'bg-red-400'}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm text-gray-200 truncate font-medium">{item.source_hint}</span>
@@ -148,8 +147,8 @@ export function HistoryView() {
             {selected && !detailLoading && (
               <>
                 <div className="flex items-center justify-between">
-                  <span className={`text-sm font-semibold ${selected.safe ? 'text-green-400' : 'text-red-400'}`}>
-                    {selected.safe ? '✓ Safe' : `✗ ${selected.threat_count} threats`}
+                  <span className={`text-sm font-semibold ${selected.action === 'allow' ? 'text-green-400' : selected.action === 'sanitize' ? 'text-amber-400' : 'text-red-400'}`}>
+                    {selected.action === 'allow' ? '✓ Allow' : `${selected.action === 'sanitize' ? 'Sanitize' : '✗ Block'} — ${selected.threat_count} threats`}
                   </span>
                   <span className="text-xs text-gray-500">{selected.scan_time_ms.toFixed(1)}ms</span>
                 </div>

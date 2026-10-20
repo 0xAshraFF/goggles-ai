@@ -79,16 +79,16 @@ export function StatsView() {
         />
         <KpiCard
           icon={<ShieldCheck size={18} className="text-green-400" />}
-          label="Safe"
-          value={stats.safe_count.toLocaleString()}
-          sub={stats.total_scans > 0 ? `${((stats.safe_count / stats.total_scans) * 100).toFixed(0)}%` : '—'}
+          label="Allowed"
+          value={stats.action_counts.allow.toLocaleString()}
+          sub={stats.total_scans > 0 ? `${((stats.action_counts.allow / stats.total_scans) * 100).toFixed(0)}%` : '—'}
           accent="green"
         />
         <KpiCard
           icon={<ShieldAlert size={18} className="text-red-400" />}
-          label="Unsafe"
-          value={stats.unsafe_count.toLocaleString()}
-          sub={stats.total_scans > 0 ? `${((stats.unsafe_count / stats.total_scans) * 100).toFixed(0)}%` : '—'}
+          label="Sanitized / Blocked"
+          value={(stats.action_counts.sanitize + stats.action_counts.block).toLocaleString()}
+          sub={stats.total_scans > 0 ? `${(((stats.action_counts.sanitize + stats.action_counts.block) / stats.total_scans) * 100).toFixed(0)}%` : '—'}
           accent="red"
         />
         <KpiCard

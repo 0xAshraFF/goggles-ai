@@ -34,7 +34,7 @@ TOOLS = [
     {
         "name": "scan_url",
         "description": (
-            "Fetch a URL and scan it for prompt injection, steganography, and cloaking attacks. "
+            "Fetch a URL and scan it for hidden prompt injection, steganography, and cloaking attacks. "
             "Returns a structured threat report with severity ratings and plain-English summaries."
         ),
         "inputSchema": {
@@ -111,7 +111,10 @@ TOOLS = [
 
 def _result_to_text(result: ScanResult) -> str:
     lines: list[str] = []
-    status = "SAFE" if result.safe else f"UNSAFE — {len(result.threats)} threat(s)"
+    if result.action == "allow":
+        status = "ALLOW — no hidden content found (visible text is not checked for prompt injection)"
+    else:
+        status = f"{result.action.upper()} — {len(result.threats)} threat(s)"
     lines.append(f"Status: {status}")
     lines.append(f"Confidence: {result.confidence:.0%}")
     lines.append(f"Scan time: {result.scan_time_ms:.1f}ms")

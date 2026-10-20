@@ -119,7 +119,7 @@ def make_stego_image_bytes() -> bytes:
 class TestScanHtml:
     def test_multi_attack_html_detects_threats(self):
         result = scan(MULTI_ATTACK_HTML, content_type="text/html")
-        assert not result.safe, "Multi-attack HTML should be flagged as unsafe"
+        assert result.hidden_content_found, "Multi-attack HTML should be flagged"
         assert result.threats, "Should detect at least one threat"
         assert len(result.threats) >= 2, f"Expected multiple threats, got {len(result.threats)}"
 
@@ -140,7 +140,7 @@ class TestScanHtml:
 
     def test_clean_html_is_safe(self):
         result = scan(CLEAN_HTML, content_type="text/html")
-        assert result.safe, f"Clean HTML should be safe. Threats: {result.threats}"
+        assert result.action == "allow", f"Clean HTML should be allowed. Threats: {result.threats}"
         assert result.threats == []
 
     def test_confidence_high_for_attacks(self):
@@ -163,7 +163,7 @@ class TestScanHtml:
 
     def test_html_comment_only_attack(self):
         result = scan(PURE_HTML_COMMENT_ATTACK, content_type="text/html")
-        assert not result.safe
+        assert result.hidden_content_found
         types = {t.type for t in result.threats}
         assert "html_comment_injection" in types
 
@@ -171,7 +171,7 @@ class TestScanHtml:
 class TestScanText:
     def test_unicode_attack_detected(self):
         result = scan(UNICODE_ATTACK_TEXT, content_type="text/plain")
-        assert not result.safe
+        assert result.hidden_content_found
         types = {t.type for t in result.threats}
         assert "zero_width_chars" in types
 
@@ -183,7 +183,7 @@ class TestScanText:
 
     def test_clean_text_safe(self):
         result = scan("This is a completely clean text document.", content_type="text/plain")
-        assert result.safe
+        assert result.action == "allow"
 
 
 class TestScanImage:
@@ -193,7 +193,7 @@ class TestScanImage:
         # Should run Tier 2 and record timing
         assert "t2" in result.tier_timings
         # Should be flagged as unsafe or borderline
-        assert not result.safe or len(result.threats) >= 0
+        assert result.hidden_content_found or len(result.threats) >= 0
 
     def test_tier2_timing_present(self):
         img_bytes = make_stego_image_bytes()
@@ -239,14 +239,14 @@ class TestScanResultModel:
         result = scan(MULTI_ATTACK_HTML, content_type="text/html")
         assert isinstance(result.has_critical, bool)
 
-    def test_safe_false_when_threats_exist(self):
+    def test_hidden_content_found_when_threats_exist(self):
         result = scan(MULTI_ATTACK_HTML, content_type="text/html")
         if result.threats:
-            assert not result.safe
+            assert result.hidden_content_found
 
     def test_empty_input_safe(self):
         result = scan("", content_type="text/html")
-        assert result.safe
+        assert result.action == "allow"
 
 
 class TestScanFile:
@@ -254,13 +254,13 @@ class TestScanFile:
         f = tmp_path / "attack.html"
         f.write_text(MULTI_ATTACK_HTML)
         result = scan_file(str(f))
-        assert not result.safe
+        assert result.hidden_content_found
 
     def test_scan_text_file(self, tmp_path):
         f = tmp_path / "clean.txt"
         f.write_text("This is a clean text file.")
         result = scan_file(str(f))
-        assert result.safe
+        assert result.action == "allow"
 
     def test_scan_png_file(self, tmp_path):
         f = tmp_path / "image.png"

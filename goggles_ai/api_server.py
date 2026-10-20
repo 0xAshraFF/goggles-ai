@@ -26,7 +26,7 @@ import json
 import time
 import uuid
 from collections import deque
-from typing import Annotated, Deque, Optional
+from typing import Annotated, Deque, Literal, Optional
 
 from fastapi import (
     FastAPI, File, Form, HTTPException, Query,
@@ -110,7 +110,8 @@ class ScanContentRequest(BaseModel):
 class ScanResponse(BaseModel):
     id: str
     timestamp: float
-    safe: bool
+    hidden_content_found: bool
+    action: str
     confidence: float
     threat_count: int
     max_severity: Optional[str]
@@ -125,7 +126,8 @@ def _to_scan_response(entry: _HistoryEntry) -> ScanResponse:
     return ScanResponse(
         id=entry.id,
         timestamp=entry.timestamp,
-        safe=r.safe,
+        hidden_content_found=r.hidden_content_found,
+        action=r.action,
         confidence=r.confidence,
         threat_count=len(r.threats),
         max_severity=r.max_severity,
@@ -207,7 +209,8 @@ class HistoryItem(BaseModel):
     timestamp: float
     source: str
     source_hint: str
-    safe: bool
+    hidden_content_found: bool
+    action: str
     threat_count: int
     max_severity: Optional[str]
     scan_time_ms: float
@@ -217,12 +220,12 @@ class HistoryItem(BaseModel):
 async def get_history(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
-    safe_only: Optional[bool] = Query(default=None),
+    action: Optional[Literal["allow", "sanitize", "block"]] = Query(default=None),
 ):
     """Return paginated scan history (newest first)."""
     items = list(reversed(list(_history)))
-    if safe_only is not None:
-        items = [e for e in items if e.result.safe == safe_only]
+    if action is not None:
+        items = [e for e in items if e.result.action == action]
 
     total = len(items)
     start = (page - 1) * page_size
@@ -239,7 +242,8 @@ async def get_history(
                 timestamp=e.timestamp,
                 source=e.source,
                 source_hint=e.source_hint,
-                safe=e.result.safe,
+                hidden_content_found=e.result.hidden_content_found,
+                action=e.result.action,
                 threat_count=len(e.result.threats),
                 max_severity=e.result.max_severity,
                 scan_time_ms=e.result.scan_time_ms,
@@ -275,15 +279,14 @@ async def get_stats():
     if not items:
         return {
             "total_scans": 0,
-            "safe_count": 0,
-            "unsafe_count": 0,
+            "action_counts": {"allow": 0, "sanitize": 0, "block": 0},
             "threat_type_counts": {},
             "severity_counts": {},
             "mean_scan_time_ms": 0,
             "scan_sources": {},
         }
 
-    safe_count = sum(1 for e in items if e.result.safe)
+    action_counts = {"allow": 0, "sanitize": 0, "block": 0}
     threat_type_counts: dict[str, int] = {}
     severity_counts: dict[str, int] = {}
     scan_sources: dict[str, int] = {}
@@ -291,6 +294,7 @@ async def get_stats():
 
     for entry in items:
         scan_sources[entry.source] = scan_sources.get(entry.source, 0) + 1
+        action_counts[entry.result.action] += 1
         total_time += entry.result.scan_time_ms
         for t in entry.result.threats:
             threat_type_counts[t.type] = threat_type_counts.get(t.type, 0) + 1
@@ -298,8 +302,7 @@ async def get_stats():
 
     return {
         "total_scans": len(items),
-        "safe_count": safe_count,
-        "unsafe_count": len(items) - safe_count,
+        "action_counts": action_counts,
         "threat_type_counts": dict(sorted(threat_type_counts.items(), key=lambda x: -x[1])),
         "severity_counts": severity_counts,
         "mean_scan_time_ms": round(total_time / len(items), 2),
